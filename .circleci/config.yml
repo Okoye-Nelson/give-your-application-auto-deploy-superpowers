@@ -6,7 +6,7 @@ orbs:
   slack: circleci/slack@4.4.4
 
 commands:
-  notify-slack:
+  notify-slack-success:
     description: notify in slack of any job pass.
     steps:
       - slack/notify:
