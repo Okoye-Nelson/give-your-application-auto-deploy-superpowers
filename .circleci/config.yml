@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Build frontend
+          name: Build front-end
           command: |
             cd frontend
             npm install
@@ -26,7 +26,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Backend build
+          name: Back-end build
           command: |
             cd backend
             npm install
@@ -43,7 +43,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Frontend Tests
+          name: Front-end Tests
           command: |
             cd frontend
             npm run test
@@ -56,7 +56,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Backend Tests
+          name: Back-end Tests
           command: |
             cd backend
             npm run test
@@ -69,10 +69,10 @@ jobs:
         - restore_cache:
             keys: [frontend-build]
         - run:
-            name: Frontend scan
+            name: Front-end Scan
             command: |
               cd frontend
-              npm audit --audit-level=critical
+              npm audit fix --audit-level=critical --force
     
     scan-backend:
       docker:
@@ -82,10 +82,10 @@ jobs:
         - restore_cache:
             keys: [backend-build]
         - run:
-            name: Backend scan
+            name: Back-end Scan
             command: |
               cd backend
-              npm audit --audit-level=critical
+              npm audit fix --audit-level=critical --force
             
 workflows:
   default:
@@ -96,7 +96,7 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
       - scan-backend:
           requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
