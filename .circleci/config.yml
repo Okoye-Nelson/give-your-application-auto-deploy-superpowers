@@ -1,5 +1,10 @@
 version: 2.1
 
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  node: circleci/node@3.0.0
+  slack: circleci/slack@4.4.4
+
 jobs:
   build-frontend:
     docker:
@@ -61,31 +66,31 @@ jobs:
             cd backend
             npm run test
 
-    scan-frontend:
-      docker:
-        - image: circleci/node:13.8.0
-      steps:
-        - checkout
-        - restore_cache:
-            keys: [frontend-build]
-        - run:
-            name: Front-end Scan
-            command: |
-              cd frontend
-              npm audit fix --audit-level=critical --force
-    
-    scan-backend:
-      docker:
-        - image: circleci/node:13.8.0
-      steps:
-        - checkout
-        - restore_cache:
-            keys: [backend-build]
-        - run:
-            name: Back-end Scan
-            command: |
-              cd backend
-              npm audit fix --audit-level=critical --force
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Front-end Scan
+          command: |
+            cd frontend
+            npm audit fix --audit-level=critical --force
+  
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end Scan
+          command: |
+            cd backend
+            npm audit fix --audit-level=critical --force
             
 workflows:
   default:
