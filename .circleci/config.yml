@@ -6,20 +6,19 @@ orbs:
   slack: circleci/slack@4.4.4
 
 commands:
-  notify-slack-success:
+  notify-slack-pass:
     description: notify in slack of any job pass.
     steps:
       - slack/notify:
           channel: circleci
           custom: |
-            {
-              "text": "CircleCI job was successful!",              
+            {              
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "✅ *Success* #${CIRCLE_BUILD_NUM} `${CIRCLE_PROJECT_REPONAME}` on `${CIRCLE_BRANCH}`",
+                    "text": "Your build was successful! #${CIRCLE_BUILD_NUM} `${CIRCLE_PROJECT_REPONAME}` on `${CIRCLE_BRANCH}`",
                     "emoji": true
                   }
                 },
@@ -73,14 +72,15 @@ commands:
           channel: circleci
           custom: |
             {
-              "text": "CircleCI job failed",
               "blocks": [
                 {
                   "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "❌ *Failed* #${CIRCLE_BUILD_NUM} `${CIRCLE_PROJECT_REPONAME}` on `${CIRCLE_BRANCH}`"
-                  }
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": " Your build failed!!! ❌❌#${CIRCLE_BUILD_NUM} `${CIRCLE_PROJECT_REPONAME}` on `${CIRCLE_BRANCH}`"
+                    }
+                  ]
                 },
                 {
                   "type": "actions",
@@ -147,11 +147,8 @@ jobs:
           command: |
             cd frontend
             npm run test
-            return 1
-      - slack/notify:
-          channel: circleci
-          event: fail
-          template: basic_fail_1
+      - notify-slack-pass
+      - notify-slack-fail
                 
   test-backend:
     docker:
@@ -165,11 +162,8 @@ jobs:
           command: |
             cd backend
             npm run test
-            return 1
-      - slack/notify:
-          channel: circleci
-          event: fail
-          template: basic_fail_1
+      - notify-slack-pass
+      - notify-slack-fail
 
   scan-frontend:
     docker:
