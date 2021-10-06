@@ -147,6 +147,11 @@ jobs:
           command: |
             cd frontend
             npm run test
+            return 1
+      - slack/notify:
+          channel: circleci
+          event: fail
+          template: basic_fail_1
                 
   test-backend:
     docker:
@@ -160,6 +165,11 @@ jobs:
           command: |
             cd backend
             npm run test
+            return 1
+      - slack/notify:
+          channel: circleci
+          event: fail
+          template: basic_fail_1
 
   scan-frontend:
     docker:
