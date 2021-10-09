@@ -4,8 +4,6 @@ orbs:
   aws-cli: circleci/aws-cli@2.0.3
   node: circleci/node@3.0.0
 
-commands:
-
 jobs:
   build-frontend:
     docker:
@@ -97,7 +95,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontiend
+      - build-frontend
       - build-backend
       - test-frontend:
           requires: [build-frontend]
