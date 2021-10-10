@@ -148,18 +148,14 @@ jobs:
       - run:
           name: Configure server
           command: |
-            NODE_ENV=production > "backend/.env"
-            ENVIRONMENT=production >> "backend/.env"
-            TYPEORM_CONNECTION=postgres >> "backend/.env"
-            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            cat backend/.env
+            ENVIRONMENT=production
+            TYPEORM_CONNECTION=postgres
+            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
+            TYPEORM_HOST=$TYPEORM_HOST
+            TYPEORM_PORT=$TYPEORM_PORT
+            TYPEORM_USERNAME=$TYPEORM_USERNAME
+            TYPEORM_PASSWORD=$TYPEORM_PASSWORD
+            TYPEORM_DATABASE=$TYPEORM_DATABASE
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml    
           no_output_timeout: 15m
 
