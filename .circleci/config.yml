@@ -142,9 +142,9 @@ jobs:
           name: Install dependencies
           command: |
             # install the dependencies needed for your playbook
-            sudo apt update
-            sudo apt install python3-pip
-            sudo apt upgrade
+            apt update
+            apt install python3-pip
+            apt upgrade
             apk add --update jq tar gzip ansible nodejs npm curl
             pip install awscli
       - run: cat .circleci/ansible/inventory.txt  
