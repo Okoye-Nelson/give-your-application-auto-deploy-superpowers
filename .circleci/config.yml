@@ -96,7 +96,6 @@ jobs:
     docker:
       - image: amazon/aws-cli # Docker image here that supports AWS CLI
     steps:
-      # Checkout code from git
       - checkout
       - run: yum install -y tar gzip jq
       - run:
@@ -106,27 +105,64 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
               --stack-name backend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \  
-              exit 1
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
+              --region ${AWS_DEFAULT_REGION}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your front-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
-              exit 1
+              --tags project=udapeople \
+              --stack-name frontend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
+              --region ${AWS_DEFAULT_REGION}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # Your code here
-            exit 1
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text >> ~/project/.circleci/ansible/inventory.txt
+
+            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["bd:88:35:9e:76:0b:a6:4a:fd:9a:f8:99:33:ab:c0:63"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            # install the dependencies needed for your playbook
+            apk add --update jq tar gzip ansible nodejs npm curl
+            pip install awscli
+      - run: cat .circleci/ansible/inventory.txt  
+      - run:
+          name: Configure server
+          command: |
+            echo NODE_ENV=production > "backend/.env"
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat backend/.env
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml 
+      # Here's where you will add some code to rollback on failure      
             
 workflows:
   default:
@@ -143,3 +179,5 @@ workflows:
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
