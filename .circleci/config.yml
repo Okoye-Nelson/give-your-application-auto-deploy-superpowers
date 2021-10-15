@@ -124,7 +124,7 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text >> ~/project/.circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
-            - run:
+      - run:
           name: Persist backend ip to storage
           # Got token from memstash.io page.  Storage is temporary (that's why it is free)
           no_output_timeout: 15m #time out after 15 minutes
@@ -176,6 +176,7 @@ jobs:
             TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat backend/.env
 
             cd .circleci/ansible
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
