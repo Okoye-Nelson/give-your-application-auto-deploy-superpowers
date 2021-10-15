@@ -131,7 +131,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: circleci/python
     steps:
       - checkout
       - add_ssh_keys:
@@ -141,8 +141,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible
+            pip install -U ansible
             pip install awscli
+            python --version
         
       - run: cat .circleci/ansible/inventory.txt  
       - run:
@@ -156,7 +157,7 @@ jobs:
             TYPEORM_USERNAME=$TYPEORM_USERNAME
             TYPEORM_PASSWORD=$TYPEORM_PASSWORD
             TYPEORM_DATABASE=$TYPEORM_DATABASE 
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
+            ansible-playbook -i ansible/inventory.txt ansible/configure-server.yml
 
 workflows:
   default:
