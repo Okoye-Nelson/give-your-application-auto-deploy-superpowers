@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@2.0.3
   node: circleci/node@3.0.0
 
 jobs:
@@ -107,6 +106,7 @@ jobs:
               --stack-name backend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
               --region ${AWS_DEFAULT_REGION}
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -116,14 +116,33 @@ jobs:
               --stack-name frontend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
               --region ${AWS_DEFAULT_REGION}
+
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text >> ~/project/.circleci/ansible/inventory.txt
-
             cat .circleci/ansible/inventory.txt
+            - run:
+          name: Persist backend ip to storage
+          # Got token from memstash.io page.  Storage is temporary (that's why it is free)
+          no_output_timeout: 15m #time out after 15 minutes
+          command: |
+            backend_dns=$(aws ec2 describe-instances \
+             --filters "Name=tag:project,Values=udacity-project3-backend" \
+             --query 'Reservations[*].Instances[*].PublicDnsName' \
+             --output text)
+            curl -H "Content-Type: text/plain" -H "token: a50e9c95-5d41-4e48-a9f6-7670004fa58d" \
+            --request PUT --data "$backend_dns" https://api.memstash.io/values/backend_dns
+            echo $backend_dns
+
+      - run:
+          name: Test memstash stored ip
+          command: |
+            result=$(curl -H "token: a50e9c95-5d41-4e48-a9f6-7670004fa58d" --request GET https://api.memstash.io/values/backend_dns)
+            echo "$result"
+
       - persist_to_workspace:
           root: ~/
           paths:
@@ -149,15 +168,17 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ENVIRONMENT=production
-            TYPEORM_CONNECTION=postgres
-            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
-            TYPEORM_HOST=$TYPEORM_HOST
-            TYPEORM_PORT=$TYPEORM_PORT
-            TYPEORM_USERNAME=$TYPEORM_USERNAME
-            TYPEORM_PASSWORD=$TYPEORM_PASSWORD
-            TYPEORM_DATABASE=$TYPEORM_DATABASE 
-            ansible-playbook -i ansible/inventory.txt ansible/configure-server.yml
+            ENVIRONMENT=production >> "backend/.env"
+            TYPEORM_CONNECTION=postgres >> "backend/.env"
+            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+
+            cd .circleci/ansible
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
 
 workflows:
   default:
