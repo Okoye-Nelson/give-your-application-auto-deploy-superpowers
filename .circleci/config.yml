@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@3.0.0
+  aws-cli: circleci/aws-cli@2.0.3
 
 jobs:
   build-frontend:
@@ -132,7 +133,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: circleci/python
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
@@ -142,9 +143,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            pip install -U ansible
+            apk add --update ansible
             pip install awscli
-            python --version
         
       - run: cat .circleci/ansible/inventory.txt  
       - run:
@@ -162,7 +162,6 @@ jobs:
 
             cd .circleci/ansible
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
-          no_output_timeout: 30m
 
 workflows:
   default:
