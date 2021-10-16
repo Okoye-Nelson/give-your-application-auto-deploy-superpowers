@@ -144,13 +144,12 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
-            pip install awscli
         
       - run: cat .circleci/ansible/inventory.txt  
       - run:
           name: Configure server
           command: |
-            ENVIRONMENT=production >> "backend/.env"
+            ENVIRONMENT=production > "backend/.env"
             TYPEORM_CONNECTION=postgres >> "backend/.env"
             TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
             TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
@@ -160,7 +159,6 @@ jobs:
             TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cat backend/.env
 
-            cd .circleci/ansible
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
 
 workflows:
