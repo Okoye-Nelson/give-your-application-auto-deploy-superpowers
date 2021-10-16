@@ -149,14 +149,15 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ENVIRONMENT=production > "backend/.env"
-            TYPEORM_CONNECTION=postgres >> "backend/.env"
-            TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            echo NODE_ENV=production > "backend/.env"
+            echo ENVIRONMENT=production > "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cat backend/.env
 
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
