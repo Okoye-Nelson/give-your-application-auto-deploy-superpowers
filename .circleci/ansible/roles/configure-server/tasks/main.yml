@@ -1,5 +1,5 @@
 ---
-- name: "update apt packages."
+- name: "update apt packages"
   become: yes
   apt:
     update_cache: yes
@@ -9,19 +9,14 @@
   apt:
     upgrade: yes
 
-- name: remove dependencies that are no longer required
+- name: "install dependencies"
   become: yes
   apt:
-    autoremove: yes
-
-- name: "install dependencies."
-  become: yes
-  apt:
-    name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
+    name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
 
-- name: "install zip unzip."
+- name: "install zip unzip"
   become: yes
   apt:
     name: ["zip", "unzip"]
@@ -35,8 +30,3 @@
     global: yes
     production: yes
     state: present
-
-- name: Create dist directory.
-  file:
-    path: "~/home/ubuntu/backend"
-    state: directory

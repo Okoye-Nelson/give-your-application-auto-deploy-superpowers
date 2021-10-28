@@ -1,9 +1,5 @@
 version: 2.1
 
-orbs:
-  node: circleci/node@3.0.0
-  aws-cli: circleci/aws-cli@2.0.3
-
 jobs:
   build-frontend:
     docker:
@@ -16,7 +12,7 @@ jobs:
           name: Build front-end
           command: |
             cd frontend
-            npm install
+            npm i
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
@@ -33,7 +29,7 @@ jobs:
           name: Back-end build
           command: |
             cd backend
-            npm install
+            npm i
             npm run build
       - save_cache:
           paths: [backend/node_modules]
@@ -47,7 +43,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Front-end Tests
+          name: test frontend
           command: |
             cd frontend
             npm run test
@@ -60,9 +56,10 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end Tests
+          name: test backend
           command: |
             cd backend
+            npm i
             npm run test
 
   scan-frontend:
@@ -73,7 +70,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Front-end Scan
+          name: scan frontend
           command: |
             cd frontend
             npm i
@@ -87,7 +84,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end Scan
+          name: scan backend
           command: |
             cd backend
             npm audit fix --audit-level=critical --force
@@ -97,7 +94,7 @@ jobs:
       - image: amazon/aws-cli # Docker image here that supports AWS CLI
     steps:
       - checkout
-      - run: yum install -y tar gzip jq
+      - run: yum -y install tar gzip jq git
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -107,7 +104,6 @@ jobs:
               --stack-name backend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
               --region ${AWS_DEFAULT_REGION}
-
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -117,7 +113,6 @@ jobs:
               --stack-name frontend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
               --region ${AWS_DEFAULT_REGION}
-
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -125,11 +120,11 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text >> ~/project/.circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
-
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
+      - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -144,23 +139,26 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
-        
-      - run: cat .circleci/ansible/inventory.txt  
+            cat .circleci/ansible/inventory.txt
       - run:
           name: Configure server
           command: |
-            echo NODE_ENV=production > "backend/.env"
-            echo ENVIRONMENT=production > "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            cat backend/.env
+            cd backend 
+            echo NODE_ENV=production > ".env"
+            echo ENVIRONMENT=production > ".env"
+            echo TYPEORM_CONNECTION=postgres >> ".env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> ".env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> ".env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> ".env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
+            cat ..
 
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
+            ansible-playbook \
+              -i .circleci/ansible/inventory.txt \
+              .circleci/ansible/configure-server.yml
+      - destroy-environment
 
 workflows:
   default:
