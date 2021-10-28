@@ -13,7 +13,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Build front-end
+          name: Build frontend
           command: |
             cd frontend
             npm i
@@ -30,7 +30,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end build
+          name: Backend build
           command: |
             cd backend
             npm i
@@ -128,7 +128,6 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -162,7 +161,6 @@ jobs:
             ansible-playbook \
               -i .circleci/ansible/inventory.txt \
               .circleci/ansible/configure-server.yml
-      - destroy-environment
 
 workflows:
   default:
