@@ -11,11 +11,11 @@
   
       environment:
         echo ENVIRONMENT=production > "backend/.env"
+        echo NODE_ENV=production >> "backend/.env"
         echo TYPEORM_CONNECTION=postgres >> "backend/.env"
         echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
         echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
         echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-        echo NODE_ENV=production >> "backend/.env"
         echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
         echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
         echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
@@ -25,7 +25,7 @@
   pre_tasks:
     - name: "wait 600 seconds for target connection to become reachable/usable."
       wait_for_connection:
-        timeout: 100
+        timeout: 50
 
     - name: "install python for Ansible."
       become: true
