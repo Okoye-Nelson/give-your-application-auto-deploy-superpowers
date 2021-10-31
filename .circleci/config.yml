@@ -7,8 +7,6 @@ orbs:
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here   
     steps:
       - run:
           name: Delete S3 content
@@ -207,7 +205,7 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-        - destroy-environment
+      - destroy-environment
   
   run-migrations:
     docker:
