@@ -52,7 +52,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys: frontend-build
       - run:
           name: Build frontend
           command: |
@@ -69,7 +69,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys: backend-build
       - run:
           name: Backend build
           command: |
@@ -86,7 +86,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys: frontend-build
       - run:
           name: test frontend
           command: |
@@ -99,7 +99,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys: backend-build
       - run:
           name: test backend
           command: |
@@ -113,7 +113,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys: frontend-build
       - run:
           name: scan frontend
           command: |
@@ -127,7 +127,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys: backend-build
       - run:
           name: scan backend
           command: |
@@ -299,7 +299,6 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
             echo ENVIRONMENT=production >> frontend/.env
             echo NODE_ENV=production >> frontend/.env
             cd frontend
