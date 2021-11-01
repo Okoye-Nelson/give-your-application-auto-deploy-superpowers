@@ -178,8 +178,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: 
-            - "70:db:b5:7b:0f:2a:43:38:30:18:ed:9a:41:5b:03:d5"
+          fingerprints: ['70:db:b5:7b:0f:2a:43:38:30:18:ed:9a:41:5b:03:d5']
       - attach_workspace:
           at: ~/
       - run:
@@ -217,7 +216,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - restore_cache:
-          key: backend-build
+          keys: [backend-build]
       - run:
           name: Install AWS CLI dependencies
           working_directory: /tmp
@@ -244,7 +243,7 @@ jobs:
             cat backend/.env
 
             cd backend
-            npm i
+            npm install
             npm run build
             npm run migrations > migrations_dump.log
             cat migrations_dump.log
@@ -327,7 +326,7 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - restore_cache:
-          key: backend-build
+          keys: [backend-build]
       - run:
           name: Install dependencies
           command: |
