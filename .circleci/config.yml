@@ -217,7 +217,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - restore_cache:
-          key: [backend-build]
+          key: backend-build
       - run:
           name: Install AWS CLI dependencies
           working_directory: /tmp
@@ -324,7 +324,7 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - restore_cache:
-          key: [backend-build]
+          key: backend-build
       - run:
           name: Install dependencies
           command: |
