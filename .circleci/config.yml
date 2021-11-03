@@ -374,12 +374,7 @@ jobs:
                 --query 'Reservations[].Instances[*].PublicIpAddress' \
                 --output text)
             echo http://${BACKEND_IP}:3030/api/status
-            if 
-              curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
-            then
-              return 0
-            else
-              return 1
+            curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
             fi
       - run:
           name: Frontend smoke test.
