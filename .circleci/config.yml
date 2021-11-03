@@ -369,17 +369,17 @@ jobs:
           name: Backend smoke test.
           command: |
             #Fetch and prepare the BACKEND_IP env var
-            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2  \
-                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
-                --query 'Reservations[].Instances[*]PublicIpAddress' \
-                --filters "Name=tag:project,Values=udapeople-backend-*" --output text)
-            echo http://${BACKEND_IP}:3030/api/status
-            if 
-              curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
+            cat .circleci/ansible/inventory.txt
+            export BACKEND_IP=$(sed -n 2p .circleci/ansible/inventory.txt)
+            export API_URL="http://${BACKEND_IP}:3030/api/status"
+            echo $API_URL
+            if curl -s --head ${API_URL} 
             then
-              exit 0
+              echo "Backend Smoke test successful."
+              return 0
             else
-              exit 1
+              echo "Backend Smoke test unsuccessful."
+              return 1
             fi
       - run:
           name: Frontend smoke test.
