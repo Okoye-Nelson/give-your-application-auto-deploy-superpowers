@@ -369,13 +369,13 @@ jobs:
           name: Backend smoke test.
           command: |
             #Fetch and prepare the BACKEND_IP env var
-            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2 \
-                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2  \
+                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
                 --query "Reservations[].Instances[*].PublicIpAddress" \
                 --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            curl "${API_URL}/api/status"
+            echo http://${BACKEND_IP}:3030/api/status
+            curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
+            fi
       - run:
           name: Frontend smoke test.
           command: |
