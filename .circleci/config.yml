@@ -369,9 +369,9 @@ jobs:
           name: Backend smoke test.
           command: |
             #Fetch and prepare the BACKEND_IP env var
-            export BACKEND_IP=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople-backend-*" --output text)            
+            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2  \
+              --query "Reservations[*].Instances[*].PublicIpAddress" \
+              --filters "Name=tag:project,Values=backend-stack-*" --output text)            
             echo http://${BACKEND_IP}:3030/api/status
             if 
               curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
