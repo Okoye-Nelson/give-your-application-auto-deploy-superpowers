@@ -360,27 +360,38 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
+          paths:
+            - .circleci
       - run:
           name: Install dependencies
           command: |
+            cd ~/backend
+            apk add --update ansible
+            apk add --update tar gzip ansible nodejs npm curl jq
             pip install awscli
-            apk add --update curl nodejs npm
+            #apk add --no-cache \
+            #python3 \
+            #py3-pip \
+            #&& pip3 install --upgrade pip \
+            #&& pip3 install \
+            #awscli \
+            #&& rm -rf /var/cache/apk/*
+            cd ~/project/backend/
+            pwd
+            ls -la
       - run:
           name: Backend smoke test.
           command: |
             #Fetch and prepare the BACKEND_IP env var 
             export BACKEND_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-stack-${CIRCLE_WORKFLOW_ID:0:5}" \
+              --filters 'Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}' \
               --query "Reservations[*].Instances[*].PublicIpAddress" \
-              --output text)            
+              --output text)  
+            pwd
+            ls -la
+            cat ~/project/.env          
             echo http://${BACKEND_IP}:3030/api/status
-            if 
-              curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
-            then
-              exit 0
-            else
-              exit 1
-            fi
+            
       - run:
           name: Frontend smoke test.
           command: |
