@@ -287,7 +287,7 @@ jobs:
           command: |
             touch ".env"
             BACKEND_IP=$(aws ec2 describe-instances --region us-west-2  \
-                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
+                --filters "Name=tag:Name, Values=backend-stack-${CIRCLE_WORKFLOW_ID:0:5}" \
                 --query "Reservations[].Instances[*].PublicIpAddress" \
                 --output text)            
             export API_URL="${BACKEND_IP}:3030"
@@ -370,7 +370,7 @@ jobs:
           command: |
             #Fetch and prepare the BACKEND_IP env var
             export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2  \
-                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
+                --filters "Name=tag:Name, Values=backend-stack-${CIRCLE_WORKFLOW_ID:0:5}" \
                 --query "Reservations[].Instances[*].PublicIpAddress" \
                 --output text)
             echo http://${BACKEND_IP}:3030/api/status
