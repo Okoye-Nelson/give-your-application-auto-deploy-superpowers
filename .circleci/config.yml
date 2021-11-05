@@ -385,7 +385,7 @@ jobs:
               --output text)            
             export API_URL="http://${BACKEND_IP}:3030"
             echo ${API_URL}
-            if curl -s http://${BACKEND_IP}:3030/api/status | grep "ok"
+            if curl -v http://${BACKEND_IP}:3030/api/status | grep "ok"
             then
               exit 0
             else
@@ -405,8 +405,8 @@ jobs:
               return 1
             fi
       #Here's where you will add some code to rollback on failure
-      - revert-migrations
-      - destroy-environment 
+      #- revert-migrations
+      #- destroy-environment 
 
 workflows:
   default:
