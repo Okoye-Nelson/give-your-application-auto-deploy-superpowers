@@ -56,28 +56,28 @@
 
 ---
 - name: Update apt packages
-  become: yes
+  become: true
   apt:
     update_cache: yes
 
-- name: "upgrade packages"
-  become: yes
+- name: upgrade packages
+  become: true
   apt:
     upgrade: yes
 
 - name: remove dependencies that are no longer required
-  become: yes
+  become: true
   apt:
     autoremove: yes
 
-- name: "install dependencies."
+- name: install dependencies.
   become: true
   apt:
     name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
     state: latest
     update_cache: yes
 
-- name: "install pm2"
+- name: install pm2
   become: true
   npm:
     name: pm2
@@ -87,23 +87,23 @@
 
 - name: Creates directory
   file:
-    path: /home/backend
+    path: /root/backend
     state: directory
 
 - name: Copy backend dist files web server
   copy:
     src: /root/project/artifact.tar.gz
-    dest: /home/backend/artifact.tar.gz
+    dest: /root/backend/artifact.tar.gz
 
 - name: Uncompress Backend
   shell: |
-    cd /home/backend
+    cd /root/backend
     tar xvzf artifact.tar.gz -C .
     ls -la
     
 - name: Build and Start PM2
   shell: |
-    cd /home/backend 
+    cd /root/backend 
     npm install
     npm run build
     pm2 start npm --name backend -- start
