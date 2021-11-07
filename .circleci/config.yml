@@ -403,7 +403,7 @@ jobs:
               echo "Frontend Smoke test unsuccessful."
               return 1
             fi
-      #Here's where you will add some code to rollback on failure
+      #Here's where you will add some code to rollback on failure 
       # - revert-migrations
       # - destroy-environment 
 
