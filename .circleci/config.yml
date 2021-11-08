@@ -351,7 +351,6 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
@@ -404,9 +403,9 @@ jobs:
               echo "Frontend Smoke test unsuccessful."
               return 1
             fi
-      #Here's where you will add some code to rollback on failure
-      #- revert-migrations
-      #- destroy-environment 
+      #Here's where you will add some code to rollback on failure 
+      - revert-migrations
+      - destroy-environment 
 
 workflows:
   default:
