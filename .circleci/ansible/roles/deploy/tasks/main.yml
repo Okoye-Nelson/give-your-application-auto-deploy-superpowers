@@ -30,6 +30,7 @@
     state: present
 
 - name: Creates directory
+  become: true
   file:
     path: /home/backend
     state: directory
