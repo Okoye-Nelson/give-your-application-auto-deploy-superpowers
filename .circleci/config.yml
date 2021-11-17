@@ -361,30 +361,38 @@ jobs:
   smoke-test:
     docker: 
       # Lightweight Docker image
-      - image: python:3.7-alpine3.11 
+      - image: circleci/node:13.8.0 #python:3.7-alpine3.11 
     steps:
       # Checkout code from git
       - checkout
-      - attach_workspace:
-          at: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
           command: |
-            pip install awscli
-            apk add --update curl nodejs npm
+            # your code here            
+            #pip install awscli
+            sudo apt update #apk add --update curl nodejs npm
+            sudo apt install -y awscli
+            sudo apt install -y python3 ansible
+      # - attach_workspace:
+      #     at: ~/
+      #     paths:
+      #       - project/.circleci/ansible/inventory.txt
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       pip install awscli
+      #       apk add --update curl nodejs npm
       - run:
           name: Backend smoke test.
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2\
+            export BACKEND_IP=$(aws ec2 describe-instances --region us-west-2 \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
               --query "Reservations[].Instances[*].PublicIpAddress" \
               --output text)            
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            curl "${API_URL}/api/status"
-            if curl "${API_URL}/api/status" | grep "ok"
+            curl -s "${API_URL}/api/status"
+            if curl -s "${API_URL}/api/status" | grep "ok"
             then
               return 0
             else
