@@ -361,26 +361,26 @@ jobs:
   smoke-test:
     docker: 
       # Lightweight Docker image
-      - image: circleci/node:13.8.0 #python:3.7-alpine3.11 
+      - image: python:3.7-alpine3.11 #circleci/node:13.8.0  
     steps:
       # Checkout code from git
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            # your code here            
-            sudo apt update apk add --update curl nodejs npm
-            sudo apt install -y awscli
-            sudo apt install -y python3 ansible
-      # - attach_workspace:
-      #     at: ~/
-      #     paths:
-      #       - project/.circleci/ansible/inventory.txt
       # - run:
       #     name: Install dependencies
       #     command: |
-      #       pip install awscli
-      #       apk add --update curl nodejs npm
+      #       # your code here            
+      #       sudo apt update apk add --update curl nodejs npm
+      #       sudo apt install -y awscli
+      #       sudo apt install -y python3 ansible
+      - attach_workspace:
+          at: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - run:
+          name: Install dependencies
+          command: |
+            pip install awscli
+            apk add --update curl nodejs npm
       - run:
           name: Backend smoke test.
           command: |
