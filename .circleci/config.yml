@@ -476,26 +476,26 @@ cleanup:
       - run:
           name: Remove old stacks and files
           command: |
-              export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-              echo "s3://udapeople-${OldWorkflowID}"
+            export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
+            --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
+            echo "s3://udapeople-${OldWorkflowID}"
+            aws s3 ls
+            if aws s3 ls s3://udapeople-${OldWorkflowID} 2>&1 | grep -q 'NoSuchBucket'
+            then
               aws s3 ls
-              if aws s3 ls s3://udapeople-${OldWorkflowID} 2>&1 | grep -q 'NoSuchBucket'
-              then
-                aws s3 ls
-                echo "Bucket not found"
-                echo "--------------Cannot Cleanup ----------------"
-              else
-                echo "--------------Begin Cleanup ----------------"
-                aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
-                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-                echo "--------------Cleanup Success----------------"
-              fi
+              echo "Bucket not found"
+              echo "--------------Cannot Cleanup ----------------"
+            else
+              echo "--------------Begin Cleanup ----------------"
+              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              echo "--------------Cleanup Success----------------"
+            fi
       - revert-migrations
 
 workflows:
-  Deployment:
+  default:
     jobs:
       - build-frontend
       - build-backend
