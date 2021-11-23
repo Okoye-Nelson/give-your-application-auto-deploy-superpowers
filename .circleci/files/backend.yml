@@ -5,6 +5,7 @@ Parameters:
   ID:
     Description: Unique identifier.
     Type: String
+    Default: ${CIRCLE_WORKFLOW_ID:5}
 
 Resources:
   InstanceSecurityGroup:
@@ -33,3 +34,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
+
+Outputs:
+  PublicDnsName:
+    Description: Server Public DNS Name
+    Value: !GetAtt EC2Instance.PublicDnsName
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendPublicDnsName"
