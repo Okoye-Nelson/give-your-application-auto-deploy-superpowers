@@ -456,42 +456,29 @@ jobs:
   cleanup:
       docker:
         # Docker image here
-        - image: python:3.7-alpine3.11
+        - image: amazon/aws-cli 
       steps:
-        # Checkout code from git
         - checkout
+
+        - run: yum -y install tar gzip jq npm
+        - run: yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm jq
+
+        - attach_workspace:
+            at: .circleci/ansible/
         - run:
-            name: Install dependencies
+            name: Get Old Stack Workflow ID and Remove old stacks and files
             command: |
-              # your code here
-              apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
-        - run:
-            name: Get old stack workflow id
-            command: |
-              # your code here
-              export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-              echo OldWorkflowID: "${OldWorkflowID}"
-              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:5}"
-        - run:
-            name: Remove old stacks and files
-            command: |
-              export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-              echo "s3://udapeople-${OldWorkflowID}"
-              aws s3 ls
-              if aws s3 ls s3://udapeople-${OldWorkflowID} 2>&1 | grep -q 'NoSuchBucket'
+              originalWorkflowID=`cat ./.circleci/ansible/originalWorkflowID.txt`
+              echo $originalWorkflowID
+              if [ -n "$originalWorkflowID" ]
               then
-                aws s3 ls
-                echo "Bucket not found"
-                echo "--------------Cannot Cleanup ----------------"
+                aws s3 rm s3://udapeople-$originalWorkflowID --recursive
+                aws s3 rb s3://udapeople-$originalWorkflowID --force
+                aws cloudformation delete-stack --stack-name udapeople-frontend-$originalWorkflowID
+                aws cloudformation delete-stack --stack-name udapeople-backend-$originalWorkflowID
               else
-                echo "--------------Begin Cleanup ----------------"
-                aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
-                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-                echo "--------------Cleanup Success----------------"
-              fi
+                echo "No old workflow exists"
+              fi 
         - revert-migrations
         - destroy-environment
 
