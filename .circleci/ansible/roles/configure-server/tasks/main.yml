@@ -1,5 +1,6 @@
+
 ---
-- name: "update apt packages"
+- name: "update apt packages."
   become: yes
   apt:
     update_cache: yes
@@ -7,21 +8,19 @@
 - name: "upgrade packages"
   become: yes
   apt:
-    upgrade: yes
+    upgrade: "yes"
 
-- name: "install dependencies"
+- name: remove dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: "install dependencies."
   become: yes
   apt:
     name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
-
-- name: "install zip unzip"
-  become: yes
-  apt:
-    name: ["zip", "unzip"]
-    state: latest
-    update_cache: yes 
 
 - name: "install pm2"
   become: yes
