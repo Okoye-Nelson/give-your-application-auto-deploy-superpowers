@@ -412,86 +412,51 @@ jobs:
 
   cloudfront-update:
     docker:
-      # Docker image here that supports AWS CLI
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
       - run:
           name: Install dependencies
           command: |
-            # your code here
-            apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
-      
-      - run:
-          name: Save the ID of the actual stack
-          command: |
-            # your code here
-            export OldWorkflowID=$(aws cloudformation \
-                      list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-                      --no-paginate --output text)
-            echo OldWorkflowID: "${OldWorkflowID}"
-              
-            curl -H "Content-Type: text/plain" \
-              -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request PUT --data "$OldWorkflowID" \
-              https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5}
-            
-            export FetchID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-            echo "FetchID: ${FetchID}"
+            yum -y install tar gzip
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
             aws cloudformation deploy \
-                    --template-file .circleci/files/cloudfront.yml \
-                    --stack-name InitialStack \
-                    --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:5}" \
-                    --tags project=udapeople
-      # Here's where you will add some code to rollback on failure
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name cloudfront-stack-${CIRCLE_WORKFLOW_ID:0:5} \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:5}" \
+            --tags project=udapeople
       - revert-migrations
       - destroy-environment
 
   cleanup:
-      docker:
-        # Docker image here
-        - image: python:3.7-alpine3.11
-      steps:
-        # Checkout code from git
-        - checkout
-        - run:
-            name: Install dependencies
-            command: |
-              # your code here
-              apk add --update curl npm  && pip3 install --upgrade pip && pip3 install awscli
-        - run:
-            name: Get old stack workflow id
-            command: |
-              # your code here
-              export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-              echo OldWorkflowID: "${CIRCLE_WORKFLOW_ID:0:5}"
-              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:5}"
-        - run:
-            name: Remove old stacks and files
-            command: |
-              export OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:5}" \
-              --request GET https://api.memstash.io/values/migration-${CIRCLE_WORKFLOW_ID:0:5})
-              echo "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5}"
-              aws s3 ls
-              if aws s3 ls s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5} 2>&1 | grep -q 'NoSuchBucket'
-              then
-                aws s3 ls
-                echo "Bucket not found"
-                echo "--------------Cannot Cleanup ----------------"
-              else
-                echo "--------------Begin Cleanup ----------------"
-                aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5} --recursive
-                aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:5}"
-                aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:5}"
-                echo "--------------Cleanup Success----------------"
-              fi
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip
+      - run:
+          name: Get old stack workflow id
+          command: |
+            export OldWorkflowID=$(aws cloudformation \
+            list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+            --no-paginate --output text)
+            echo "OldWorkflowID: ${OldWorkflowID}"
+            # Fetch the stack names          
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+            echo "${STACKS}"
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+              echo "start clean up"
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws s3 rb s3://udapeople-${OldWorkflowID} --force
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+            fi 
         - revert-migrations
         - destroy-environment
 
