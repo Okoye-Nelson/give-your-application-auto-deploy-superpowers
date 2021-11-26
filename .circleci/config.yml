@@ -457,8 +457,8 @@ jobs:
               aws s3 rb s3://udapeople-${OldWorkflowID} --force
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             fi 
-        - revert-migrations
-        - destroy-environment
+      - revert-migrations
+      - destroy-environment
 
 workflows:
   deployment:
