@@ -1,7 +1,7 @@
 A public git repository with your project code [URL01] - https://github.com/Okoye-Nelson/give-your-application-auto-deploy-superpowers
 
-Evidence of deployed and functioning front-end application in an S3 bucket [URL02] - 
+Evidence of deployed and functioning front-end application in an S3 bucket [URL02] - http://udapeople-2095f.s3.us-west-2.amazonaws.com/index.html
 
-Evidence of deployed and functioning front-end application in CloudFront [URL03] - 
+Evidence of deployed and functioning front-end application in CloudFront [URL03] - d15u44gpu9si0w.cloudfront.net
 
-Evidence of healthy back-end application. [URL04] - 
+Evidence of healthy back-end application. [URL04] - http://ec2-52-13-7-235.us-west-2.compute.amazonaws.com:9090/targets
